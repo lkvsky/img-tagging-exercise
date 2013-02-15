@@ -1,143 +1,141 @@
-var Tags = [
-  {x: 325, y: 640, name: "Alligator"},
-  {x: 400, y: 450, name: "Pump"}]
+var TT = (function() {
+  function Tag(name, left, top) {
+    var that = this;
 
-var Names = ["Fangy Worm", "Gas Mask Ninja",
-             "Snajke", "Blob", "Onyx Skelly", "GhostyFace"]
+    this.name = name;
 
+    this.left = left;
 
-function commitTags() {
-  var newTag = {
+    this.top = top;
 
-    temp: $("#temp"),
-
-    handleEvent: function() {
-      var obj = this.addTags();
-      this.renderTag(obj);
-    },
-
-    addTags: function() {
-      var left = parseInt(this.temp.css("left"));
-      var top = parseInt(this.temp.css("top"));
-      var name = this.temp.data("name");
-
-      var obj = {
-        x: left,
-        y: top,
-        name: name
-      };
-
-      Tags.push(obj);
-      return obj;
-    },
-
-    renderTag: function(obj) {
-      var left = obj.x;
-      var top = obj.y;
+    this.render = function() {
       newDiv = $("<div>")
         .addClass("tag")
-        .attr("id", obj.name)
-        .css("left", left)
-        .css("top", top);
+        .attr("id", that.name)
+        .css("left", that.left)
+        .css("top", that.top);
 
       label = $("<div>")
-        .html(obj.name)
+        .html(that.name)
         .addClass("label")
         .css("top", 85);
 
       $(newDiv).append(label);
-      $("#image").append(newDiv);
-    }
-  }
 
-  return newTag
-}
+      return newDiv;
+    };
+  };
 
-// function tagList(Names) {
 
-// }
+  function positionTag(element, names) {
+    this.element = element;
 
-function makeTagger(element) {
-  var tagger = {
-
-    element: $(element),
-
-    bindEvent: function() {
+    this.bindEvent = function() {
       this.element.click(this.handleClick.bind(this));
-    },
+    };
 
-    handleClick: function(event) {
+    this.handleClick = function(event) {
       var clickLocation = {
         posX: (event.pageX - 40),
         posY: (event.pageY - 40)
       }
 
-      this.positionSquare(clickLocation)
-    },
+      this.positionSquare(clickLocation);
+      this.nameTag();
+    };
 
-    positionSquare: function(clickLocation) {
-      $("#temp").remove();
-      var list = this.createList();
-      list.css("left", 60);
+    this.nameTag = function() {
+      $("li").click(function() {
+        var name = $(this).html();
+        $("li").removeClass("selected");
+        $(this).addClass("selected");
+        $("#temp").attr("data-name", name);
+      });
+    };
 
+    this.positionSquare = function(clickLocation) {
       var left = clickLocation.posX;
       var top = clickLocation.posY;
+
+      $("#temp").show();
+      $("#temp").css("left", left).css("top", top);
+    };
+
+    this.createTag = function() {
+      var list = this.createList();
+      list.css("left", 60);
       newDiv = $("<div>")
         .addClass("tag")
         .attr("id", "temp")
-        .css("left", left)
-        .css("top", top);
+        .hide();
 
       newDiv.append(list);
-      this.element.append(newDiv);
-    },
+      $("body").append(newDiv);
+    };
 
-    createList: function() {
+    this.createList = function() {
       var list = $("<ul>");
 
-      $.each(Names, function(ind, val) {
+      $.each(names, function(ind, val) {
         var element = $("<li>").html(val).addClass("namesList");
         list.append(element);
       });
 
       return list;
-    }
-
+    };
   };
 
-  tagger.bindEvent();
+  function commitTag(db) {
+    this.addTag = function() {
+      var left = parseInt($("#temp").css("left"));
+      var top = parseInt($("#temp").css("top"));
+      var name = $("#temp").attr("data-name");
 
-  return tagger;
-};
+      var obj = new Tag(name, left, top);
 
-$(function() {
-  var element = $("#image");
+      db.push(obj);
+      return obj;
+    };
+  };
+
+
+  return {
+    Tag: Tag,
+    positionTag: positionTag,
+    commitTag: commitTag
+  };
+})();
+
+$(function () {
+  var tags = [
+    new TT.Tag("Car", 200, 200),
+    new TT.Tag("Shoulder", 300, 300)];
+
+  var names = ["Brawny Gal", "Godzilla", "Mothra", "Cyclops"];
+
+  var image = $("#image");
+  var tags = tags;
+
+  var positionTag = new TT.positionTag(image, names);
+  var commitTag = new TT.commitTag(tags);
+
+  $(tags).each(function() {
+    image.append(this.render());
+  })
 
   $("#addTag").click(function() {
-    makeTagger(element)
+    positionTag.createTag();
+    positionTag.bindEvent();
   });
 
   $("#stopTagging").click(function() {
-    var commit = commitTags();
-    commit.handleEvent();
-
+    var tag = commitTag.addTag();
+    image.append(tag.render());
+    $("#temp").hide();
+    console.log(tags);
   });
 
-  $(Tags).each(function() {
-    var left = this.x;
-    var top = this.y;
-    newDiv = $("<div>")
-      .addClass("tag")
-      .attr("id", this.name)
-      .css("left", left)
-      .css("top", top);
-
-    label = $("<div>")
-      .html(this.name)
-      .addClass("label")
-      .css("top", 85);
-
-    $(newDiv).append(label);
-    $("#image").append(newDiv);
-  });
 });
+
+
+

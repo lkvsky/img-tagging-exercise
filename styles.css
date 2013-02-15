@@ -21,4 +21,16 @@
   display: none;
 }
 
+.namesList {
+  background: white;
+  width: 100%;
+  list-style: none;
+}
 
+li:hover {
+  background: red;
+}
+
+.selected {
+  background: green;
+}
